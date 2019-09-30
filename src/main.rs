@@ -24,7 +24,7 @@ fn main() {
     let tod=lsqr::sp_mul_a1(&scan_mat, &skymap_flat);
     println!("{}", tod.len());
     let mut lss=lsqr::LsqrState::new(scan_mat_solve, &tod);
-    for i in 0..10000{
+    for i in 0..100000{
         lss.next(&scan_mat_solve);
         if i%100 ==0{
             let resid=lss.calc_resid(&scan_mat_solve, &tod);

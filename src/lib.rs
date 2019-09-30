@@ -1,7 +1,8 @@
 extern crate ndarray;
 extern crate sprs;
+extern crate num_traits;
 
-
+use sprs::CsMat;
 use ndarray::Array2;
 
 
@@ -28,8 +29,59 @@ pub fn scan(init_point: (f64, f64), init_dir:(f64, f64), step_size: f64, img_siz
     }).collect()
 }
 
-pub fn gen_tod(){
+pub fn ij2n(i: usize, j: usize, img_size: usize)->usize{
+    i*img_size+j
+}
 
+pub fn n2ij(n: usize, img_size: usize)->(usize, usize){
+    let i=n/img_size;
+    let j=n-i*img_size;
+    (i,j)    
+}
+
+pub fn get_scan_mat(pixes: &Vec<(usize, usize)>, img_size: usize)->sprs::CsMat<f64>{
+    let nscan=pixes.len();
+    let iptr:Vec<_>=(0..=nscan).collect();
+    let idn:Vec<_>=pixes.iter().map(|&(i,j)|{ij2n(i,j, img_size)}).collect();
+    let data=vec![1.0; nscan];
+    sprs::CsMat::new((nscan, img_size*img_size), iptr, idn, data)
+}
+
+pub fn get_scan_mat_gaussian(pixes: &Vec<(usize, usize)>, img_size: usize, beam_sigma: f64, beam_range: usize)->sprs::CsMat<f64>{
+    let nscan=pixes.len();
+    let mut iptr=vec![0];
+    let mut idn=Vec::new();
+    let mut data=Vec::new();
+    for &(i0,j0) in pixes.iter(){
+        let mut idn1=Vec::new();
+        let mut data1=Vec::new();
+        for i in (i0 as isize-beam_range as isize..=i0 as isize+beam_range as isize){
+            for j in (j0 as isize-beam_range as isize..=j0 as isize+beam_range as isize){
+                if i<0 || j<0 || i>=img_size as isize || j>=img_size as isize{
+                    continue;
+                }
+                let r2=((i-i0 as isize) as f64).powi(2)+((j-j0 as isize) as f64).powi(2);
+                let b=(-r2/(2.0*beam_sigma)).exp();
+                let n=ij2n(i as usize, j as usize, img_size);
+                idn1.push(n);
+                data1.push(b);
+            }
+        }
+        iptr.push(iptr.last().unwrap()+idn1.len());
+        idn.append(&mut idn1);
+        data.append(&mut data1);
+
+    }
+    sprs::CsMat::new((nscan, img_size*img_size), iptr, idn, data)
+}
+
+pub fn sprs2ndarray<T>(input: &sprs::CsMat<T>)->ndarray::Array2<T>
+where T: Copy+num_traits::Num{
+    let mut output=ndarray::Array2::<T>::zeros((input.rows(), input.cols()));
+    for (&x, (i,j)) in input.iter(){
+        output[(i,j)]=x;
+    }
+    output
 }
 
 impl BounceScanState{

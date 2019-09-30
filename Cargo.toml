@@ -1,5 +1,7 @@
 [dependencies]
 ndarray = '0.13.0'
+sprs = '0.6.5'
+
 
 [dependencies.fitsimg]
 git = 'https://github.com/astrojhgu/rust_fitsimg.git'

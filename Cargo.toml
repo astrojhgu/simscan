@@ -1,0 +1,11 @@
+[dependencies]
+ndarray = '0.13.0'
+
+[dependencies.fitsimg]
+git = 'https://github.com/astrojhgu/rust_fitsimg.git'
+
+[package]
+authors = ['Gu Junhua <jhgu@nao.cas.cn>']
+edition = '2018'
+name = 'simscan'
+version = '0.1.0'

@@ -1,11 +1,11 @@
 extern crate simscan;
 extern crate fitsimg;
 extern crate ndarray;
-extern crate lsqr;
+extern crate linear_solver;
 
 use ndarray::array;
 
-use simscan::{scan, get_scan_mat, get_scan_mat_gaussian};
+use simscan::{scan, get_scan_mat, get_scan_mat_gaussian, sprs2ndarray};
 const IMG_SIZE:usize=16;
 
 fn main() {
@@ -21,22 +21,15 @@ fn main() {
     let scan_mat_no_deconv=get_scan_mat(&ptrs, 16);
 
     let scan_mat_solve=&scan_mat;
-    let tod=lsqr::sp_mul_a1(&scan_mat, &skymap_flat);
-    println!("{}", tod.len());
-    let mut lss=lsqr::LsqrState::new(scan_mat_solve, &tod);
-    for i in 0..100000{
-        lss.next(&scan_mat_solve);
-        if i%100 ==0{
-            let resid=lss.calc_resid(&scan_mat_solve, &tod);
-            println!("{} {}", i, resid.dot(&resid));
 
-        }
-    }
+    let ata=&(scan_mat.transpose_view().to_owned())*&scan_mat;
+    let ata_no_deconv=&(scan_mat_no_deconv.transpose_view().to_owned())*&scan_mat_no_deconv;
 
-    let solution=lss.x.clone().into_shape((IMG_SIZE, IMG_SIZE)).unwrap().into_dyn();
+    let tod=linear_solver::utils::sp_mul_a1(&scan_mat, skymap_flat.view());
+    fitsimg::write_img("scan.fits".to_string(), &sprs2ndarray(&scan_mat).into_dyn());
+    fitsimg::write_img("scan_no_conv.fits".to_string(), &sprs2ndarray(&scan_mat_no_deconv).into_dyn());
+    fitsimg::write_img("ata.fits".to_string(), &sprs2ndarray(&ata).into_dyn());
+    fitsimg::write_img("ata_no_conv.fits".to_string(), &sprs2ndarray(&ata_no_deconv).into_dyn());
 
-    //println!("{:?}", scan_mat);
-    //println!("{} {}" , scan_mat.rows(), scan_mat.cols());
-    //let mat=simscan::sprs2ndarray(&scan_mat).into_dyn();
-    fitsimg::write_img("a.fits".to_string(), &solution);
+        
 }

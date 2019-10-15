@@ -2,7 +2,7 @@
 ndarray = '0.13.0'
 num-traits = '0.2.8'
 sprs = '0.6.5'
-lsqr = {path='../lsqr'}
+linear_solver = {path='../linear_solver'}
 
 [dependencies.fitsimg]
 git = 'https://github.com/astrojhgu/rust_fitsimg.git'

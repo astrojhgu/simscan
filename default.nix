@@ -8,6 +8,7 @@ stdenv.mkDerivation {
     libtool
     pkg-config
     cfitsio
+    bzip2.out
     ];
     hardeningDisable = [ "all" ];
     #buildInputs = [gcc-unwrapped gcc-unwrapped.out gcc-unwrapped.lib];

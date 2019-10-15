@@ -3,6 +3,7 @@ extern crate fitsimg;
 extern crate ndarray;
 extern crate linear_solver;
 
+use linear_solver::io::RawMM;
 use ndarray::array;
 
 use simscan::{scan, get_scan_mat, get_scan_mat_gaussian, sprs2ndarray};
@@ -31,5 +32,8 @@ fn main() {
     fitsimg::write_img("ata.fits".to_string(), &sprs2ndarray(&ata).into_dyn());
     fitsimg::write_img("ata_no_conv.fits".to_string(), &sprs2ndarray(&ata_no_deconv).into_dyn());
 
-        
+    let mm=RawMM::from_sparse(&scan_mat);
+    mm.to_file("A.mtx");
+    let mm=RawMM::from_array1(skymap_flat.view());
+    mm.to_file("tod.mtx");
 }

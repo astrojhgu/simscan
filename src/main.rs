@@ -23,7 +23,7 @@ fn main() {
 
     let scan_mat_solve=&scan_mat;
 
-    let ata=&(scan_mat.transpose_view().to_owned())*&scan_mat;
+    let ata=&scan_mat.transpose_view()*&scan_mat;
     let ata_no_deconv=&(scan_mat_no_deconv.transpose_view().to_owned())*&scan_mat_no_deconv;
 
     let tod=linear_solver::utils::sp_mul_a1(&scan_mat, skymap_flat.view());
@@ -34,6 +34,10 @@ fn main() {
 
     let mm=RawMM::from_sparse(&scan_mat);
     mm.to_file("A.mtx");
+    let mm=RawMM::from_sparse(&scan_mat_no_deconv);
+    mm.to_file("A_no_conv.mtx");
     let mm=RawMM::from_array1(skymap_flat.view());
+    mm.to_file("answer.mtx");
+    let mm=RawMM::from_array1(tod.view());
     mm.to_file("tod.mtx");
 }

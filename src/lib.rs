@@ -1,10 +1,11 @@
 extern crate ndarray;
 extern crate sprs;
 extern crate num_traits;
-
+extern crate chfft;
 use sprs::CsMat;
 use ndarray::Array2;
-
+use num_traits::{NumAssign, FloatConst, Float};
+use num_complex::Complex;
 
 pub struct BounceScanState{
     dir: (f64, f64),
@@ -117,5 +118,17 @@ impl BounceScanState{
         let result=self.regulate(self.point);
         return (f64::round(result.0) as usize, f64::round(result.1) as usize)
     }
+}
+
+pub fn deconv<T>(data: &[T], kernel: &[Complex<T>])->Vec<T>
+where T: Float + FloatConst + NumAssign + std::fmt::Debug
+{
+    let mut rfft=chfft::RFft1D::<T>::new(data.len());
+    let mut s=rfft.forward(data);
+    assert!(s.len()==kernel.len());
+    for i in 0..s.len(){
+        s[i]=s[i]/kernel[i];
+    }
+    rfft.backward(&s[..])
 }
 

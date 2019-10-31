@@ -1,7 +1,3 @@
-extern crate ndarray;
-extern crate sprs;
-extern crate num_traits;
-extern crate chfft;
 use sprs::CsMat;
 use ndarray::Array2;
 use num_traits::{NumAssign, FloatConst, Float};
